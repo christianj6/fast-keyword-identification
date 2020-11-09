@@ -4,6 +4,7 @@ from fast_keywords.preprocessing import json_to_str
 from fast_keywords.objects import keywords, document
 
 
+LANGUAGE = 'german'
 WORDLIST = "Suchworte.xlsx"
 PREFIX = "fast_keywords/res/nielsen/"
 ARGS = {
@@ -25,15 +26,15 @@ def main():
             corpus.append(json_to_str(json.load(f), **ARGS))
 
     df = pd.read_excel(f"{PREFIX}{WORDLIST}")
-    kw = keywords.Keywords()
+    kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     output = []
     for file, text in zip(files, corpus):
-        text = json_to_str()
-        doc = document.Doc()
+        doc = document.Doc(text, keywords=kw,
+                file=file, language=LANGUAGE)
         output.append(doc.entities)
 
     output = pd.concat(output)
-    output.to_csv(index=False)
+    output.to_csv('OUTPUT.csv', index=False)
 
 
 if __name__ == '__main__':

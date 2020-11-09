@@ -9,6 +9,8 @@ setup(
     url="",
     packages=find_packages(),
     install_requires=[
-        "pandas==0.25.1"
+        "pandas==0.25.1",
+        "scikit-learn==0.23.0",
+        "sparse-dot-topn==0.2.9"
     ]
 )
