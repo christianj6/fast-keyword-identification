@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Client-sensitive resources.
+fast_keywords/res/nielsen
