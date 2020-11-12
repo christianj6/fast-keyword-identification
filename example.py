@@ -30,7 +30,7 @@ def main():
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     output = []
     # Each text is a list of pages.
-    for file, text in zip(FILES, corpus):
+    for file, text in list(zip(FILES, corpus))[:1]:
         doc = document.Doc(
                 text,
                 keywords=kw,
