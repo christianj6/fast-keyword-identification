@@ -19,6 +19,7 @@ class Doc():
         file:str,
         language:str,
         window:int=2,
+        bound:float=0.95,
     ):
         '''
         Instantiate object and extract
@@ -51,6 +52,7 @@ class Doc():
         self.keywords = keywords
         self.file = file
         self.window = window
+        self.bound = bound
         # Lowercase and split the text.
         self.text, self.page_mask = self.preprocess_text(text)
         # Extract entities from text.
@@ -103,7 +105,8 @@ class Doc():
         matches = self.get_matches(
                         self.text,
                         self.keywords.match,
-                        self.window
+                        self.window,
+                        self.bound
                     )
         # Filter the matches by several heuristics.
         matches = self.filter_matches(matches)
@@ -150,6 +153,7 @@ class Doc():
         text:list,
         matcher:Callable[[str],list],
         window:int,
+        bound:float
     )->list:
         '''
         Get all matches for input text,
@@ -164,6 +168,8 @@ class Doc():
                 Function for matching strings.
             window : int
                 Window for looking back when getting matches.
+            bound : float
+                Lower bound for filtering matches.
 
         Returns
         ---------
@@ -174,7 +180,7 @@ class Doc():
         matches = []
         for i, token in enumerate(tqdm(text)):
             # Get matches for current token.
-            candidates = matcher(token)
+            candidates = matcher(token, bound=bound)
             # Add these to the list with their locations.
             matches.extend([(range(i, i+1), candidate) for candidate in candidates])
             # Get matches for each ngram looking back.
@@ -182,7 +188,7 @@ class Doc():
                 ngram = ' '.join(text[i-(j+1):i+1])
                 # At beginning of a text strings will be empty.
                 if ngram:
-                    candidates = matcher(ngram)
+                    candidates = matcher(ngram, bound=bound)
                     # Add to list with location ranges.
                     matches.extend([(range(i-(j+1), i+1), candidate) for candidate in candidates])
 

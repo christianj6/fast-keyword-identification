@@ -92,7 +92,7 @@ class Keywords():
         self.matrix = self.vectorizer.fit_transform(strings)
 
 
-    def match(self, string:str, bound:float=0.95):
+    def match(self, string:str, bound:float=0.7):
         '''
         Match a query string against the list
         of fitted strings via the tfidf matrix.
