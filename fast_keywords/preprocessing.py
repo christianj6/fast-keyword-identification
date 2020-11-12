@@ -17,11 +17,12 @@ def json_to_str(json:dict, ret:str, txt:str)->str:
 
     Returns
     ---------
-        text : str
-            Concatenated and cleaned string.
+        text : list[str]
+            List of page texts as cleaned
+            strings.
     '''
     text = []
-    for item in json[ret]:
-        text.append(item[txt].strip())
+    for page in json[ret]:
+        text.append(page[txt].strip())
 
-    return ' '.join([' '.join(item.split()) for item in text])
+    return [' '.join(item.split()) for item in text]

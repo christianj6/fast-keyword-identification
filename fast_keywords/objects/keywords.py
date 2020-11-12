@@ -64,6 +64,8 @@ class Keywords():
         # Ids if provided.
         if ids:
             self.ids = ids
+        else:
+            self.ids = range(len(words))
 
         # Fit object to words.
         self.fit(words)
@@ -90,7 +92,7 @@ class Keywords():
         self.matrix = self.vectorizer.fit_transform(strings)
 
 
-    def match(self, string:str, bound:float=0.5):
+    def match(self, string:str, bound:float=0.7):
         '''
         Match a query string against the list
         of fitted strings via the tfidf matrix.
@@ -150,7 +152,7 @@ class Keywords():
         # Get the ids of the non-zero matches to map back to words.
         match_ids = non_zero[0]
         # Return as a list of tuples.
-        matches = [(self.words[j], matches.data[i]) for i, j in enumerate(match_ids)]
+        matches = [(self.words[j], matches.data[i], j) for i, j in enumerate(match_ids)]
         # Sort it by closest match.
         return sorted(matches, key=lambda x: x[1], reverse=True)
 
