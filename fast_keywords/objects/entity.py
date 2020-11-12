@@ -92,8 +92,8 @@ class Entity():
         # Build a string by iterating through tokens.
         for i, token in enumerate(text):
             if i in location:
-                continue
-            else:
-                environment += token + ' '
+                token = token.upper()
+
+            environment += token + ' '
 
         return environment

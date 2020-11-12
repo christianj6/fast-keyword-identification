@@ -46,7 +46,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# TODO: Investigate different windows.
-# TODO: Forgot any csv attributes?
