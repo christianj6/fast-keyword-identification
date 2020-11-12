@@ -2,6 +2,7 @@ from fast_keywords.objects import entity, keywords
 from typing import Callable
 import pandas as pd
 from collections import Counter
+from tqdm import tqdm
 
 
 class Doc():
@@ -75,15 +76,15 @@ class Doc():
             mask : list[int]
                 Mask each token to its page no.
         '''
-        text = []
+        txt = []
         mask = []
         for i, page in enumerate(text):
             # Basic preprocessing to separate punctuations.
             for token in page.lower().replace(".", " . ").replace(",", " , ").split():
-                text.append(token)
+                txt.append(token)
                 mask.append(i)
 
-        return text, mask
+        return txt, mask
 
     def get_entities(self)->pd.DataFrame:
         '''
