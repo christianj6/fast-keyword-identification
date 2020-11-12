@@ -30,7 +30,7 @@ def main():
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     output = []
     # Each text is a list of pages.
-    for file, text in zip(files, corpus):
+    for file, text in zip(FILES, corpus):
         doc = document.Doc(
                 text,
                 keywords=kw,
@@ -49,5 +49,4 @@ if __name__ == '__main__':
 
 
 # TODO: Investigate different windows.
-# TODO: Increase the match threshold.
 # TODO: Forgot any csv attributes?

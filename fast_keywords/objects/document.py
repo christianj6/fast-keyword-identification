@@ -128,17 +128,17 @@ class Doc():
 
         # Cast all entities to df.
         df = []
-        for entity in entities:
+        for e in entities:
             df.append(
                 {
                     "File": self.file,
-                    "Page": entity.page,
-                    "Location": entity.location,
-                    "Keyword": entity.match,
-                    "Keyword ID": entity.idx,
-                    "Matched String": entity.string,
-                    "Match Confidence": entity.score,
-                    "Surrounding Text": entity.environment,
+                    "Page": e.page,
+                    "Location": e.location,
+                    "Keyword": e.match,
+                    "Keyword ID": e.idx,
+                    "Matched String": e.string,
+                    "Match Confidence": e.score,
+                    "Surrounding Text": e.environment,
 
                 }
             )
@@ -172,7 +172,7 @@ class Doc():
                 match information including the location.
         '''
         matches = []
-        for i, token in enumerate(text):
+        for i, token in enumerate(tqdm(text)):
             # Get matches for current token.
             candidates = matcher(token)
             # Add these to the list with their locations.
@@ -215,14 +215,14 @@ class Doc():
         for span, (word, score, i) in matches:
             # Immediately grab matches of single tokens with
             # no collisions.
-            if len(span) == 1 and Counter[span[0]] == 1:
+            if len(span) == 1 and counter[span[0]] == 1:
                 mask.append(True)
                 continue
 
             # If single token is matched multiple times, assume
             # that waiting will yield a superior match to
             # a longer string of text.
-            elif len(span) == 1 and Counter[span[0]] >1:
+            elif len(span) == 1 and counter[span[0]] >1:
                 mask.append(False)
                 continue
 

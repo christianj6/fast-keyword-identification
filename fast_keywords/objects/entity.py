@@ -90,7 +90,7 @@ class Entity():
         # Reset the location to this slice.
         location = range(10, 10+len(location))
         # Build a string by iterating through tokens.
-        for i, token in text:
+        for i, token in enumerate(text):
             if i in location:
                 continue
             else:
