@@ -3,7 +3,7 @@ from sparse_dot_topn import awesome_cossim_topn
 import re
 
 
-def ngrams(string, n=3):
+def ngrams(string, n=2):
     '''
     Custom analyzer for tfidf vectorizer. Splits a
     string into all possible ngrams.
