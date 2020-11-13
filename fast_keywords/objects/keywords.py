@@ -92,6 +92,31 @@ class Keywords():
         self.matrix = self.vectorizer.fit_transform(strings)
 
 
+    def get_vector(self, string:str):
+        '''
+        Get ngram vector representation of a
+        string based on the fitted vectorizer.
+
+        Parameters
+        ---------
+            string : str
+                String to transform.
+
+        Returns
+        ---------
+            vector : csr_matrix
+                Compressed sparse row matrix
+                representation.
+        '''
+        # Cast the query string into a list because sklearn vectorizer
+        # wants an array-like object.
+        string = [string]
+        # Vectorize the string so we can match it against the matrix.
+        vector = self.vectorizer.transform(string)
+
+        return vector
+
+
     def match(self, string:str, bound:float=0.7):
         '''
         Match a query string against the list
@@ -140,11 +165,8 @@ class Keywords():
 
             return awesome_cossim_topn(A, B.transpose(), ntop, lower_bound)
 
-        # Cast the query string into a list because sklearn vectorizer
-        # wants an array-like object.
-        string = [string]
         # Vectorize the string so we can match it against the matrix.
-        query = self.vectorizer.transform(string)
+        query = self.get_vector(string)
         # Search for top matches. Ignore those which are too small.
         matches = cossim_top(query, lower_bound=bound)
         # Get all the non-zero matches.
