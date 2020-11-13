@@ -142,7 +142,7 @@ class Doc():
                     "Matched String": e.string,
                     "Match Confidence": e.score,
                     "Surrounding Text": e.environment,
-                    "Match is Invalid": False,
+                    "Match is Invalid": 0,
                 }
             )
 
