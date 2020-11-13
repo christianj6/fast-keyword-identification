@@ -142,7 +142,7 @@ class Doc():
                     "Matched String": e.string,
                     "Match Confidence": e.score,
                     "Surrounding Text": e.environment,
-
+                    "Match is Invalid": False,
                 }
             )
 
@@ -228,7 +228,7 @@ class Doc():
             # If single token is matched multiple times, assume
             # that waiting will yield a superior match to
             # a longer string of text.
-            elif len(span) == 1 and counter[span[0]] >1:
+            elif len(span) == 1 and counter[span[0]] > 1:
                 mask.append(False)
                 continue
 
