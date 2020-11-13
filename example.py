@@ -37,7 +37,7 @@ def main():
                 file=file,
                 language=LANGUAGE,
                 window=2,
-                bound=0.95
+                bound=0.96
                 )
         output.append(doc.entities)
 
