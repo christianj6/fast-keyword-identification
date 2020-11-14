@@ -4,6 +4,7 @@ import pandas as pd
 from collections import Counter
 from tqdm import tqdm
 import dill
+import re
 
 
 class Doc():
@@ -21,6 +22,7 @@ class Doc():
         language:str,
         window:int=2,
         bound:float=0.95,
+        trained_filter:bool=False,
     ):
         '''
         Instantiate object and extract
@@ -47,6 +49,11 @@ class Doc():
                 Maximum n-gram window for which
                 we want to recursively check for
                 more-relevant matches.
+            bound : float
+                Lower bound for extracting keyword matches.
+            trained_filter : bool
+                Y/N to use pretrained models
+                for additional filtering.
         '''
         # Assign miscellaneous attributes.
         self.language = language
@@ -126,7 +133,8 @@ class Doc():
                         )
                 )
         # Filter entities based on the environment.
-        entities = self.filter_entities(entities)
+        if self.trained_filter:
+            entities = self.filter_entities(entities)
 
         # TODO: Consolidate entities by keywords.
         # TODO: Issue with variable assignment in environment method?
@@ -190,12 +198,11 @@ class Doc():
             # Remove the keyword from the environment.
             environment = re.sub(r'[A-Z]', '', e.environment)
             # Embed text into the ngram vector space.
-            vector = self.keywords.get_vector(environment).toarray()[0]
+            vector = self.keywords.get_vector(environment).toarray()
             # Run inference with the model.
             if model.predict(vector) == 1:
                 # If True, means there is an issue
                 # with this token. Skip it.
-                print(e.match)
                 continue
             else:
                 validated.append(e)

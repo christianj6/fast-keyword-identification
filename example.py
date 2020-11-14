@@ -30,14 +30,15 @@ def main():
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     output = []
     # Each text is a list of pages.
-    for file, text in list(zip(FILES, corpus))[:1]:
+    for file, text in list(zip(FILES, corpus)):
         doc = document.Doc(
                 text,
                 keywords=kw,
                 file=file,
                 language=LANGUAGE,
                 window=2,
-                bound=0.96
+                bound=0.96,
+                trained_filter=False,
                 )
         output.append(doc.entities)
 
