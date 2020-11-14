@@ -3,6 +3,7 @@ from typing import Callable
 import pandas as pd
 from collections import Counter
 from tqdm import tqdm
+import dill
 
 
 class Doc():
@@ -124,8 +125,9 @@ class Doc():
                             text=self.text,
                         )
                 )
+        # Filter entities based on the environment.
+        entities = self.filter_entities(entities)
 
-        # TODO: Filter entities based on the environment.
         # TODO: Consolidate entities by keywords.
         # TODO: Issue with variable assignment in environment method?
 
@@ -147,6 +149,58 @@ class Doc():
             )
 
         return pd.DataFrame(df)
+
+    def filter_entities(self, entities:list):
+        '''
+        Remove entities for which the
+        environment surrounding the
+        identified keyword suggests that
+        the matched string is not the entity
+        we are really looking for, based on
+        pretrained models derived from
+        labeling of previous outputs.
+
+        Parameters
+        ---------
+            entities : list
+                List of entity objects
+                which need to be validated.
+
+        Returns
+        ---------
+            validated : list
+                Filtered entities.
+        '''
+        validated = []
+        for e in entities:
+            # Check if there exists a
+            # trained model for this
+            # entity. If so, we will try
+            # to run a prediction for this model
+            # against the entity's environment.
+            try:
+                with open(f"fast_keywords/models/{self.language}/{e.match}", "rb") as f:
+                    model = dill.load(f)
+
+            except FileNotFoundError:
+                # Validate the unassessed keyword.
+                validated.append(e)
+                continue
+
+            # Remove the keyword from the environment.
+            environment = re.sub(r'[A-Z]', '', e.environment)
+            # Embed text into the ngram vector space.
+            vector = self.keywords.get_vector(environment).toarray()[0]
+            # Run inference with the model.
+            if model.predict(vector) == 1:
+                # If True, means there is an issue
+                # with this token. Skip it.
+                print(e.match)
+                continue
+            else:
+                validated.append(e)
+
+        return validated
 
     @staticmethod
     def get_matches(
