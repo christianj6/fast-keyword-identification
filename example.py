@@ -58,3 +58,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# TODO: Consolidate hyphenated words.
+# TODO: Parse special characters eg ß.
+# TODO: Train word classifiers.
