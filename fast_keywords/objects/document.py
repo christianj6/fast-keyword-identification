@@ -61,6 +61,7 @@ class Doc():
         self.file = file
         self.window = window
         self.bound = bound
+        self.trained_filter = trained_filter
         # Lowercase and split the text.
         self.text, self.page_mask = self.preprocess_text(text)
         # Extract entities from text.
@@ -136,7 +137,9 @@ class Doc():
         if self.trained_filter:
             entities = self.filter_entities(entities)
 
-        # TODO: Consolidate entities by keywords.
+        # Consolidate entities by position.
+        entities = self.consolidate_entities(entities, self.text)
+
         # TODO: Issue with variable assignment in environment method?
 
         # Cast all entities to df.
@@ -157,6 +160,85 @@ class Doc():
             )
 
         return pd.DataFrame(df)
+
+    @staticmethod
+    def consolidate_entities(entities, text):
+        '''
+        Consolidate entities which are
+        'back-to-back' ie if two or more terms
+        are next to eachother, assume they refer to
+        a single entity and consolidate them
+        into one entity.
+
+        Parameters
+        ----------
+            entities : list
+                List of entity objects.
+            text : str
+                Raw text needed for creating
+                new entity objects.
+
+        Returns
+        ---------
+            entities : list
+                List of consolidated entity objects.
+        '''
+        def group_two_entities(a, b):
+            '''
+            Group two entities together
+            into a single entity.
+
+            Parameters
+            ---------
+                a : entity
+                    First entity
+                b : entity
+                    Second entity.
+
+            Returns
+            ---------
+                entity : entity
+                    Consolidated entity.
+            '''
+            return entity.Entity(
+                    page=a.page,
+                    location=range(a.location[0], b.location[-1]),
+                    string=a.string + ' ' + b.string,
+                    match=a.match + ' ' + b.match,
+                    idx=a.idx,
+                    score=(a.score + b.score) / 2,
+                    text=text,
+                )
+
+        consolidated = []
+        for i, e in enumerate(entities):
+            # Check if 'back-to-back' with
+            # the following entity. We take advantage
+            # of the fact that the entities are
+            # ordered by their appearance in the
+            # document.
+            try:
+                if entities[i+1].location[0] - e.location[-1] == 1:
+                    # If should be grouped with following token, just wait,
+                    # ignoring this token that we don't get duplicates.
+                    continue
+
+                elif e.location[0] - entities[i-1].location[-1] == 1:
+                    # On iteration corresponding to the matched token,
+                    # we then consolidate the two and add this to the list.
+                    consolidated.append(group_two_entities(entities[i-1], e))
+                    continue
+
+                else:
+                    # Otherwise we just add it to the list.
+                    consolidated.append(e)
+
+            except IndexError:
+                # If we reach the end we can't look ahead so
+                # just quit the loop.
+                pass
+
+        return consolidated
 
     def filter_entities(self, entities:list):
         '''
