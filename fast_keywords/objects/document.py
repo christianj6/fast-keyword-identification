@@ -268,6 +268,11 @@ class Doc():
                 elif e.location[0] - entities[i-1].location[-1] == 1:
                     # On iteration corresponding to the matched token,
                     # we then consolidate the two and add this to the list.
+                    if entities[i-1].match == e.match:
+                        # If they are the same keyword, don't
+                        # accept because it doesn't make sense.
+                        continue
+
                     consolidated.append(group_two_entities(entities[i-1], e))
                     continue
 
