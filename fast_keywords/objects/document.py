@@ -3,9 +3,12 @@ from typing import Callable
 import pandas as pd
 from collections import Counter
 from tqdm import tqdm
+from nltk.corpus import stopwords
 import dill
 import re
 
+
+SW = stopwords.words('english') + stopwords.words('german')
 
 class Doc():
     '''
@@ -133,6 +136,8 @@ class Doc():
                             text=self.text,
                         )
                 )
+        # Clean out irrelevant entities and reformat.
+        entities = self.clean_entities(entities)
         # Filter entities based on the environment.
         if self.trained_filter:
             entities = self.filter_entities(entities)
@@ -157,6 +162,46 @@ class Doc():
             )
 
         return pd.DataFrame(df)
+
+    @staticmethod
+    def clean_entities(entities):
+        '''
+        Clean out entities by removing
+        those which are obviously
+        unsuitable and reformatting
+        strings.
+
+        Parameters
+        ---------
+            entities : list
+                Unprocessed
+                entities.
+
+        Returns
+        ---------
+            entities : list
+                Cleaned entities.
+        '''
+        cleaned = []
+        for e in entities:
+            # Clean string of punctuation.
+            e.string = re.sub(r'[.,\/#!$%\^&\*;:{}=\-_`~()]', '', e.string)
+            if e.string in SW:
+                # Ignore matches to stopwords.
+                continue
+
+            elif len(e.match) <= 3 \
+                and e.match.lower() != e.string.lower():
+                # If string is short and not an exact
+                # match, ignore because the ngram matcher
+                # is not precise enough to catch such cases.
+                continue
+
+            else:
+                # Otherwise accept the entity.
+                cleaned.append(e)
+
+        return cleaned
 
     @staticmethod
     def consolidate_entities(entities, text):
