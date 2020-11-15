@@ -54,10 +54,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# TODO: fully clarify the workflow ... if they train a model how will this effect new data? we want to
-# avoid overfitting but allow for retraining etc ...
-# trainer class is robust enough that you can easily continue training on newly-labeled csv
-# TODO: some errors in the csv formatting because columns are getting fucked up
-# TODO: Issue with variable assignment in environment method?
