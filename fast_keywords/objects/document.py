@@ -139,9 +139,6 @@ class Doc():
 
         # Consolidate entities by position.
         entities = self.consolidate_entities(entities, self.text)
-
-        # TODO: Issue with variable assignment in environment method?
-
         # Cast all entities to df.
         df = []
         for e in entities:
@@ -202,7 +199,7 @@ class Doc():
             '''
             return entity.Entity(
                     page=a.page,
-                    location=range(a.location[0], b.location[-1]),
+                    location=range(a.location[0], b.location[-1]+1),
                     string=a.string + ' ' + b.string,
                     match=a.match + ' ' + b.match,
                     idx=a.idx,
