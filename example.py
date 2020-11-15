@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from fast_keywords.preprocessing import json_to_str
+from fast_keywords.utils import json_to_str, get_distribution
 from fast_keywords.objects import keywords, document
 
 
@@ -33,9 +33,9 @@ def main():
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     output = []
     # Each text is a list of pages.
-    for file, text in list(zip(FILES, corpus)):
+    for file, text in list(zip(FILES, corpus))[:1]:
         doc = document.Doc(
-                text,
+                text[:20],
                 keywords=kw,
                 file=file,
                 language=LANGUAGE,
@@ -46,7 +46,14 @@ def main():
         output.append(doc.entities)
 
     output = pd.concat(output)
-    output.to_csv('OUTPUT.csv', index=False)
+    # Get distribution stats.
+    distribution = get_distribution(output)
+
+    # Combine output and distribution into a single .xls
+    writer = pd.ExcelWriter('OUTPUT.xls')
+    output.to_excel(writer, 'keywords', index=False)
+    distribution.to_excel(writer, 'distribution', index=False)
+    writer.save()
 
 
 if __name__ == '__main__':
