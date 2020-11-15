@@ -190,7 +190,7 @@ class Doc():
                 # Ignore matches to stopwords.
                 continue
 
-            elif len(e.match) <= 3 \
+            elif len(str(e.match)) <= 3 \
                 and e.match.lower() != e.string.lower():
                 # If string is short and not an exact
                 # match, ignore because the ngram matcher
