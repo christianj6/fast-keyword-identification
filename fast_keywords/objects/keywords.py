@@ -22,7 +22,7 @@ def ngrams(string, n=2):
             List of ngrams for the string.
     '''
     # Clean the string.
-    string = re.sub(r'[,-./]|\sBD',r'', string)
+    string = re.sub(r'[,-/]|\sBD',r'', string)
     # Get the character ngrams.
     ngrams = zip(*[string[i:] for i in range(n)])
 
