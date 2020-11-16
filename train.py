@@ -11,7 +11,7 @@ PREFIX = "fast_keywords/res/nielsen/"
 def main():
     words = pd.read_excel(f"{PREFIX}{WORDLIST}")
     kw = keywords.Keywords(words.searchtext.tolist(), ids=words.id.tolist())
-    output = pd.read_csv('OUTPUT.csv').infer_objects()
+    output = pd.read_csv('OUTPUT.xls').infer_objects()
     for name, group in output.groupby(["Keyword"]):
         try:
             if group["Match is Invalid"].astype('int32').any():

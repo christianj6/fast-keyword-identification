@@ -55,6 +55,7 @@ class Entity():
         self.match = match
         self.idx = idx
         self.score = score
+        self.is_invalid = 0
         # Format environment from the text.
         self.environment = self.format_environment(text, self.location)
 

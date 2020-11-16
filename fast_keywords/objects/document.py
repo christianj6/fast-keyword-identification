@@ -334,10 +334,11 @@ class Doc():
             # Run inference with the model.
             if model.predict(vector) == 1:
                 # If True, means there is an issue
-                # with this token. Skip it.
-                continue
-            else:
-                validated.append(e)
+                # with this token. Update
+                # invalidity value.
+                e.is_invalid = 1
+
+            validated.append(e)
 
         return validated
 
