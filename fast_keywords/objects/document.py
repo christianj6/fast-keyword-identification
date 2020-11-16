@@ -93,6 +93,9 @@ class Doc():
         txt = []
         mask = []
         for i, page in enumerate(text):
+            # Consolidate hyphenated words separated
+            # by line breaks.
+            page = page.replace('- ', '')
             # Basic preprocessing to separate punctuations.
             for token in page.lower().replace(".", " . ").replace(",", " , ").split():
                 txt.append(token)
