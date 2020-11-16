@@ -60,5 +60,13 @@ if __name__ == '__main__':
     main()
 
 
+# TODO: Reduce 'false-positives' by training classifiers for contentious words; observe performance.
+
+# TODO: Ensure entity validation protocol is sensible. Consolidated entities?
+# TODO: Introduce distribution of keywords per file.
+# TODO: Use list of false positives to label.
+# TODO: Optimize the training workflow; model selection.
+# TODO: Flag areas of the text which are probably ads.
 # TODO: Parse special characters eg ß.
 # TODO: Train word classifiers.
+# TODO: Namelist to ignore names in following token.
