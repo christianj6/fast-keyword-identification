@@ -1,5 +1,12 @@
 import pandas as pd
+from fast_keywords.objects import keywords
+import os
+import dill
+import re
 
+
+WORDLIST = "Suchworte.xlsx"
+PREFIX = "fast_keywords/res/nielsen/"
 
 def json_to_str(json:dict, ret:str, txt:str)->str:
     '''
@@ -57,3 +64,39 @@ def get_distribution(output:'pd.DataFrame'):
             )
 
     return pd.DataFrame(distribution)
+
+
+def evaluate_classifiers(filename):
+    '''
+    Evaluate classification
+    accuracy in a messy fashion,
+    by averaging all results
+    to see how the classifers
+    are collectively performing.
+
+    Parameters
+    ---------
+        file : str
+            File for eval.
+
+    Returns
+    ---------
+        score : float
+            Classification accuracy.
+    '''
+    words = pd.read_excel(f"{PREFIX}{WORDLIST}")
+    kw = keywords.Keywords(words.searchtext.tolist(), ids=words.id.tolist())
+    scores = []
+    output = pd.read_excel(filename).infer_objects()
+    for file in os.listdir("fast_keywords/models/german"):
+        with open(f'fast_keywords/models/german/{file}', 'rb') as f:
+            model = dill.load(f)
+
+        rows = output[output['Keyword'] == file]
+        X = rows['Surrounding Text'].tolist()
+        X = [re.sub(r'[A-Z]', '', x) for x in X]
+        X = [kw.get_vector(x).toarray()[0] for x in X]
+        y = rows['Match is Invalid'].tolist()
+        scores.append(model.model.score(X, y))
+
+    return sum(scores) / len(scores)
