@@ -41,18 +41,21 @@ def main():
                 language=LANGUAGE,
                 window=2,
                 bound=.99,
-                trained_filter=False,
+                trained_filter=True,
                 )
         output.append(doc.entities)
 
     output = pd.concat(output)
-    # Get distribution stats.
-    distribution = get_distribution(output)
 
     # Combine output and distribution into a single .xls
     writer = pd.ExcelWriter('OUTPUT.xls')
     output.to_excel(writer, 'keywords', index=False)
-    distribution.to_excel(writer, 'distribution', index=False)
+    # Get distribution for each file.
+    for name, file in output.groupby(['File']):
+        distribution = get_distribution(file)
+        # Add as a new sheet.
+        distribution.to_excel(writer, name, index=False)
+
     writer.save()
 
 
