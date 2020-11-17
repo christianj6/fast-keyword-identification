@@ -97,6 +97,6 @@ def evaluate_classifiers(filename):
         X = [re.sub(r'[A-Z]', '', x) for x in X]
         X = [kw.get_vector(x).toarray()[0] for x in X]
         y = rows['Match is Invalid'].tolist()
-        scores.append(model.model.score(X, y))
+        scores.append((file, model.model.score(X, y)))
 
-    return sum(scores) / len(scores)
+    return scores
