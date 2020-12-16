@@ -26,6 +26,8 @@ class Doc():
         window:int=2,
         bound:float=0.95,
         trained_filter:bool=False,
+        keyword_to_product:dict=None,
+        products:dict=None,
     ):
         '''
         Instantiate object and extract
@@ -69,6 +71,9 @@ class Doc():
         self.text, self.page_mask = self.preprocess_text(text)
         # Extract entities from text.
         self.entities = self.get_entities()
+        # Additional dicts for filtering.
+        self.keyword_to_product = keyword_to_product
+        self.products = products
 
     @staticmethod
     def preprocess_text(text):
@@ -144,6 +149,11 @@ class Doc():
         # Filter entities based on the environment.
         if self.trained_filter:
             entities = self.filter_entities(entities)
+
+        # TODO: Filter products for brand mentions.
+        # TODO: just add another function
+            # TODO: uses the new dicts to append additional
+            # attributes to relevant entities
 
         # Consolidate entities by position.
         entities = self.consolidate_entities(entities, self.text)
@@ -248,8 +258,8 @@ class Doc():
             return entity.Entity(
                     page=a.page,
                     location=range(a.location[0], b.location[-1]+1),
-                    string=a.string + ' ' + b.string,
-                    match=a.match + ' ' + b.match,
+                    string=str(a.string) + ' ' + str(b.string),
+                    match=str(a.match) + ' ' + str(b.match),
                     idx=a.idx,
                     score=(a.score + b.score) / 2,
                     text=text,

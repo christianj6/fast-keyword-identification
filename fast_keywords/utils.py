@@ -100,3 +100,58 @@ def evaluate_classifiers(filename):
         scores.append((file, model.model.score(X, y)))
 
     return scores
+
+
+def load_keyword_product_dict(keyword_to_product:str) -> dict:
+    '''
+    Load a mapping from keyword id to possible product ids,
+    that these can then be used for an additional
+    filtering step during entity extraction.
+
+    Parameters
+    ---------
+        keyword_to_product : str
+            Filepath.
+
+    Returns
+    ---------
+        output : dict
+            Mapping.
+    '''
+    # Noise
+    noise = [".", ",", "image"]
+    output = {}
+    df = pd.read_csv(keyword_to_product)
+    for idx, group in df.groupby(by=["Keyword ID"]):
+        id_to_word = {}
+        for i, row in group.iterrows():
+            for word in row['Surrounding Text'].split():
+                if not word.lower() == row['Keyword'].lower() \
+                        and not word.lower() in noise:
+                    id_to_word[word.lower()] = i
+
+        output[idx] = id_to_word
+
+    return output
+
+
+def load_product_data_dict(products:str) -> dict:
+    '''
+    Load product metadata keyed to product ids that
+    these data can then be associated with
+    identified entities.
+
+    Parameters
+    ---------
+        products : str
+            Filepath.
+
+    Returns
+    ---------
+        output : dict
+            Mapping.
+    '''
+    df = pd.read_csv(products)
+    df = df.drop(columns=["Unnamed: 0"])
+
+    return df.to_dict(orient="index")
