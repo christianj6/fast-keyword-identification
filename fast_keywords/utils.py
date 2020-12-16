@@ -124,11 +124,11 @@ def load_keyword_product_dict(keyword_to_product:str) -> dict:
     df = pd.read_csv(keyword_to_product)
     for idx, group in df.groupby(by=["Keyword ID"]):
         id_to_word = {}
-        for i, row in group.iterrows():
+        for _, row in group.iterrows():
             for word in row['Surrounding Text'].split():
                 if not word.lower() == row['Keyword'].lower() \
                         and not word.lower() in noise:
-                    id_to_word[word.lower()] = i
+                    id_to_word[word.lower()] = row["File"]
 
         output[idx] = id_to_word
 
@@ -152,6 +152,6 @@ def load_product_data_dict(products:str) -> dict:
             Mapping.
     '''
     df = pd.read_csv(products)
-    df = df.drop(columns=["Unnamed: 0"])
+    df = df.set_index("Unnamed: 0")
 
     return df.to_dict(orient="index")

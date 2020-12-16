@@ -58,6 +58,16 @@ class Entity():
         self.is_invalid = 0
         # Format environment from the text.
         self.environment = self.format_environment(text, self.location)
+        # Empty attributes pending product information.
+        self.is_product = 0
+        self.product_data = {
+                        "product_id": None,
+                        "wirtschaftsbereich": None,
+                        "group": None,
+                        "family": None,
+                        "product_name": None,
+                        "company": None,
+        }
 
     @staticmethod
     def format_environment(

@@ -69,11 +69,11 @@ class Doc():
         self.trained_filter = trained_filter
         # Lowercase and split the text.
         self.text, self.page_mask = self.preprocess_text(text)
-        # Extract entities from text.
-        self.entities = self.get_entities()
         # Additional dicts for filtering.
         self.keyword_to_product = keyword_to_product
         self.products = products
+        # Extract entities from text.
+        self.entities = self.get_entities()
 
     @staticmethod
     def preprocess_text(text):
@@ -150,13 +150,13 @@ class Doc():
         if self.trained_filter:
             entities = self.filter_entities(entities)
 
-        # TODO: Filter products for brand mentions.
-        # TODO: just add another function
-            # TODO: uses the new dicts to append additional
-            # attributes to relevant entities
-
         # Consolidate entities by position.
         entities = self.consolidate_entities(entities, self.text)
+
+        # Filter products for brand mentions.
+        if self.keyword_to_product and self.products:
+            entities = self.filter_products(entities)
+
         # Cast all entities to df.
         df = []
         for e in entities:
@@ -171,10 +171,85 @@ class Doc():
                     "Match Confidence": e.score,
                     "Surrounding Text": e.environment,
                     "Match is Invalid": e.is_invalid,
+                    "Product": e.is_product,
+                    # Product data
+                    "Product ID": e.product_data["product_id"],
+                    "Product Wirtschaftsbereich": e.product_data["wirtschaftsbereich"],
+                    "Product Group": e.product_data["group"],
+                    "Product Family": e.product_data["family"],
+                    "Product Name": e.product_data["product_name"],
+                    "Product Company": e.product_data["company"],
                 }
             )
 
         return pd.DataFrame(df)
+
+    def filter_products(self, entities):
+        '''
+        Filters entities by identifying those
+        which can be associated with products
+        from a finite list. For those which
+        match to a product, impose an
+        additional filter which checks whether
+        or not a set of keywords can also be
+        found within the entity's surrounding
+        text. If this condition is not met, the
+        supposed product is marked as invalid.
+
+        Parameters
+        ---------
+            entities : list
+                Unprocessed
+                entities.
+
+        Returns
+        ---------
+            entities : list
+                Cleaned entities.
+        '''
+        filtered = []
+        for e in entities:
+            if e.idx in self.keyword_to_product:
+                # Use array mask to impose filter.
+                product_marker_words = list(self.keyword_to_product[e.idx].keys())
+                mask = [word in e.environment.split() and not word == e.match.lower() \
+                            and not word in SW for \
+                                word in product_marker_words]
+                if any(mask):
+                    # Mark as product and update metadata.
+                    e.is_product = 1
+                    # Take first match.
+                    marker_idx = mask.index(True)
+                    product_marker_word = product_marker_words[marker_idx]
+                    # Get relevant product entry.
+                    entry = self.products[self.keyword_to_product[e.idx][product_marker_word]]
+                    # Take the first match.
+                    e.product_data.update(
+                            {
+                                "product_id": self.keyword_to_product[e.idx][product_marker_word],
+                                "wirtschaftsbereich": entry["Wirtschaftsbereich"],
+                                "group": entry["Gruppe"],
+                                "family": entry["Familie"],
+                                "product_name": entry["Produkt"],
+                                "company": entry["Firma"],
+                            }
+                        )
+                    filtered.append(e)
+                    continue
+
+                else:
+                    # If condition not met, update
+                    # validity condition.
+                    e.is_invalid = 1
+                    filtered.append(e)
+                    continue
+
+            else:
+                # Otherwise assume non-product and continue.
+                filtered.append(e)
+                continue
+
+        return filtered
 
     @staticmethod
     def clean_entities(entities):

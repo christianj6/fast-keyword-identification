@@ -7,6 +7,7 @@ from fast_keywords.objects import keywords, document
 LANGUAGE = 'german'
 WORDLIST = "Suchworte.xlsx"
 PREFIX = "fast_keywords/res/nielsen/"
+ARTICLE_DIR = "articles/"
 ARGS = {
     "ret": "ParsedResults",
     "txt": "ParsedText",
@@ -21,13 +22,13 @@ FILES = [
     "TV MOVIE 2220",
     "MADAME 1020",
 ]
-PRODUCTS = "products.csv"
-KEYWORD_TO_PRODUCT = "keyword_to_product.csv"
+PRODUCTS = "products_new.csv"
+KEYWORD_TO_PRODUCT = "keyword_to_product_new.csv"
 
 def main():
     corpus = []
     for file in FILES:
-        with open(f"{PREFIX}{file}.json", 'r') as f:
+        with open(f"{PREFIX}{ARTICLE_DIR}{file}.json", 'r') as f:
             # Appends list of page texts.
             corpus.append(json_to_str(json.load(f), **ARGS))
 
@@ -35,12 +36,9 @@ def main():
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
     keyword_to_product = load_keyword_product_dict(f"{PREFIX}{KEYWORD_TO_PRODUCT}")
     products = load_product_data_dict(f"{PREFIX}{PRODUCTS}")
-    exit()
-
-
     output = []
     # Each text is a list of pages.
-    for file, text in list(zip(FILES, corpus)):
+    for file, text in list(zip(FILES, corpus))[:1]:
         doc = document.Doc(
                 text,
                 keywords=kw,
@@ -55,7 +53,6 @@ def main():
         output.append(doc.entities)
 
     output = pd.concat(output)
-
     # Combine output and distribution into a single .xls
     writer = pd.ExcelWriter('OUTPUT.xls')
     output.to_excel(writer, 'keywords', index=False)
@@ -71,20 +68,8 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO: Precompute a mapping from the keyword list to the new .xls.
-# TODO: Store this mapping as a .csv mapping keyword id to product / company id.
-# TODO: Create a metadata hash table (dict) which is created in main() and can be
-    # fed to the document object for getting additional info on each created entity.
+
 # TODO: Wrap the main() method into a pipeline function so it is cleaner.
-# TODO: When creating a doc, optionally use metadata hash table to get an additional
-    # dict of metadata that we pass to the entity when created, then when we lack
-    # the metadata we will simply pass an empty dict.
-# TODO: Add is_product attr to the metadata dict.
-# TODO: If entity is associated with product, filter those without brand in context.
-# TODO: add another tag to the output .xls to demonstrate that we know what is a product.
-
-###
-
 # TODO: Ensure entity validation protocol is sensible. Consolidated entities?
 # TODO: Flag areas of the text which are probably ads.
 # TODO: Parse special characters eg ß.
