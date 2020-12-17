@@ -28,6 +28,7 @@ class Doc():
         trained_filter:bool=False,
         keyword_to_product:dict=None,
         products:dict=None,
+        sentiment_model=None
     ):
         '''
         Instantiate object and extract
@@ -72,6 +73,8 @@ class Doc():
         # Additional dicts for filtering.
         self.keyword_to_product = keyword_to_product
         self.products = products
+        # Sentiment model.
+        self.sentiment_model = sentiment_model
         # Extract entities from text.
         self.entities = self.get_entities()
 
@@ -159,7 +162,13 @@ class Doc():
 
         # Cast all entities to df.
         df = []
-        for e in entities:
+        for e in tqdm(entities):
+            # Get sentiment if there is a model.
+            if self.sentiment_model:
+                e.sentiment = self.sentiment_model.predict_sentiment([e.environment.lower()])[0]
+            else:
+                e.sentiment = None
+
             df.append(
                 {
                     "File": self.file,
@@ -179,6 +188,7 @@ class Doc():
                     "Product Family": e.product_data["family"],
                     "Product Name": e.product_data["product_name"],
                     "Product Company": e.product_data["company"],
+                    "Sentiment": e.sentiment
                 }
             )
 

@@ -2,6 +2,7 @@ import pandas as pd
 import json
 from fast_keywords.utils import json_to_str, get_distribution, load_keyword_product_dict, load_product_data_dict
 from fast_keywords.objects import keywords, document
+from germansentiment import SentimentModel
 
 
 LANGUAGE = 'german'
@@ -30,7 +31,7 @@ def main():
     for file in FILES:
         with open(f"{PREFIX}{ARTICLE_DIR}{file}.json", 'r') as f:
             # Appends list of page texts.
-            corpus.append(json_to_str(json.load(f), **ARGS))
+            corpus.append(json_to_str(json.load(f), **ARGS)[:50])
 
     df = pd.read_excel(f"{PREFIX}{WORDLIST}")
     kw = keywords.Keywords(df.searchtext.tolist(), ids=df.id.tolist())
@@ -48,7 +49,8 @@ def main():
                 bound=.99,
                 trained_filter=True,
                 keyword_to_product=keyword_to_product,
-                products=products
+                products=products,
+                sentiment_model=SentimentModel()
                 )
         output.append(doc.entities)
 
