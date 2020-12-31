@@ -12,7 +12,7 @@ pipeline is currently tuned to a brand identification task.
 #### Installation
 ```$ git clone https://github.com/christianj6/fast-keyword-identification.git```
 
-```$ cd fast_keyword_identification```
+```$ cd fast-keyword-identification```
 
 ```$ pip install setup.py```
 
