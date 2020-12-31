@@ -136,3 +136,4 @@ fast_keywords/res/*.py
 fast_keywords/models/german
 
 playground.py
+snippets.py
