@@ -1,7 +1,7 @@
 import pandas as pd
 import json
-from fast_keywords.utils import json_to_str, get_distribution, load_keyword_product_dict, load_product_data_dict
-from fast_keywords.objects import keywords, document
+from tools import json_to_str, get_distribution, load_keyword_product_dict, load_product_data_dict
+from objects import keywords, document
 from germansentiment import SentimentModel
 
 

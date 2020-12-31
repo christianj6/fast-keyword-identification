@@ -1,4 +1,4 @@
-from fast_keywords.objects import keywords, trainer
+import keywords, trainer
 import pandas as pd
 import dill
 import re
