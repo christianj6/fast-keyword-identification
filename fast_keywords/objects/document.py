@@ -8,29 +8,31 @@ import dill
 import re
 
 
-SW = stopwords.words('english') + stopwords.words('german')
+SW = stopwords.words("english") + stopwords.words("german")
 
-class Doc():
-    '''
+
+class Doc:
+    """
     Object for storing attributes of a single
     parsed document, including the
     original text and any entities
     identified against a keyword matcher.
-    '''
+    """
+
     def __init__(
         self,
-        text:list,
-        keywords:keywords.Keywords,
-        file:str,
-        language:str,
-        window:int=2,
-        bound:float=0.95,
-        trained_filter:bool=False,
-        keyword_to_product:dict=None,
-        products:dict=None,
-        sentiment_model=None
+        text: list,
+        keywords: keywords.Keywords,
+        file: str,
+        language: str,
+        window: int = 2,
+        bound: float = 0.95,
+        trained_filter: bool = False,
+        keyword_to_product: dict = None,
+        products: dict = None,
+        sentiment_model=None,
     ):
-        '''
+        """
         Instantiate object and extract
         filtered entities from keywords.
 
@@ -60,7 +62,7 @@ class Doc():
             trained_filter : bool
                 Y/N to use pretrained models
                 for additional filtering.
-        '''
+        """
         # Assign miscellaneous attributes.
         self.language = language
         self.keywords = keywords
@@ -80,7 +82,7 @@ class Doc():
 
     @staticmethod
     def preprocess_text(text):
-        '''
+        """
         Process the original text into a list
         of lists, where each higher-order list
         is the text of a single page, and the lower-order
@@ -97,13 +99,13 @@ class Doc():
                 List of all tokens in the text.
             mask : list[int]
                 Mask each token to its page no.
-        '''
+        """
         txt = []
         mask = []
         for i, page in enumerate(text):
             # Consolidate hyphenated words separated
             # by line breaks.
-            page = page.replace('- ', '')
+            page = page.replace("- ", "")
             # Basic preprocessing to separate punctuations.
             for token in page.lower().replace(".", " . ").replace(",", " , ").split():
                 txt.append(token)
@@ -111,8 +113,8 @@ class Doc():
 
         return txt, mask
 
-    def get_entities(self)->pd.DataFrame:
-        '''
+    def get_entities(self) -> pd.DataFrame:
+        """
         Extract recognizeable entities from
         object text and return a dataframe
         summarizing their location
@@ -123,30 +125,27 @@ class Doc():
             entities : pd.DataFrame
                 Entities organized
                 in tabular form
-        '''
+        """
         # Get matches.
         matches = self.get_matches(
-                        self.text,
-                        self.keywords.match,
-                        self.window,
-                        self.bound
-                    )
+            self.text, self.keywords.match, self.window, self.bound
+        )
         # Filter the matches by several heuristics.
         matches = self.filter_matches(matches)
         # Cast filtered matches to entities.
         entities = []
         for span, (word, score, i) in matches:
             entities.append(
-                    entity.Entity(
-                            page=self.page_mask[span[0]],
-                            location=span,
-                            string=' '.join([self.text[j] for j in span]),
-                            match=word,
-                            idx=self.keywords.ids[i],
-                            score=score,
-                            text=self.text,
-                        )
+                entity.Entity(
+                    page=self.page_mask[span[0]],
+                    location=span,
+                    string=" ".join([self.text[j] for j in span]),
+                    match=word,
+                    idx=self.keywords.ids[i],
+                    score=score,
+                    text=self.text,
                 )
+            )
         # Clean out irrelevant entities and reformat.
         entities = self.clean_entities(entities)
         # Filter entities based on the environment.
@@ -165,7 +164,9 @@ class Doc():
         for e in tqdm(entities):
             # Get sentiment if there is a model.
             if self.sentiment_model:
-                e.sentiment = self.sentiment_model.predict_sentiment([e.environment.lower()])[0]
+                e.sentiment = self.sentiment_model.predict_sentiment(
+                    [e.environment.lower()]
+                )[0]
             else:
                 e.sentiment = None
 
@@ -188,14 +189,14 @@ class Doc():
                     "Product Family": e.product_data["family"],
                     "Product Name": e.product_data["product_name"],
                     "Product Company": e.product_data["company"],
-                    "Sentiment": e.sentiment
+                    "Sentiment": e.sentiment,
                 }
             )
 
         return pd.DataFrame(df)
 
     def filter_products(self, entities):
-        '''
+        """
         Filters entities by identifying those
         which can be associated with products
         from a finite list. For those which
@@ -216,15 +217,18 @@ class Doc():
         ---------
             entities : list
                 Cleaned entities.
-        '''
+        """
         filtered = []
         for e in entities:
             if e.idx in self.keyword_to_product:
                 # Use array mask to impose filter.
                 product_marker_words = list(self.keyword_to_product[e.idx].keys())
-                mask = [word in e.environment.split() and not word == e.match.lower() \
-                            and not word in SW for \
-                                word in product_marker_words]
+                mask = [
+                    word in e.environment.split()
+                    and not word == e.match.lower()
+                    and not word in SW
+                    for word in product_marker_words
+                ]
                 if any(mask):
                     # Mark as product and update metadata.
                     e.is_product = 1
@@ -232,18 +236,22 @@ class Doc():
                     marker_idx = mask.index(True)
                     product_marker_word = product_marker_words[marker_idx]
                     # Get relevant product entry.
-                    entry = self.products[self.keyword_to_product[e.idx][product_marker_word]]
+                    entry = self.products[
+                        self.keyword_to_product[e.idx][product_marker_word]
+                    ]
                     # Take the first match.
                     e.product_data.update(
-                            {
-                                "product_id": self.keyword_to_product[e.idx][product_marker_word],
-                                "wirtschaftsbereich": entry["Wirtschaftsbereich"],
-                                "group": entry["Gruppe"],
-                                "family": entry["Familie"],
-                                "product_name": entry["Produkt"],
-                                "company": entry["Firma"],
-                            }
-                        )
+                        {
+                            "product_id": self.keyword_to_product[e.idx][
+                                product_marker_word
+                            ],
+                            "wirtschaftsbereich": entry["Wirtschaftsbereich"],
+                            "group": entry["Gruppe"],
+                            "family": entry["Familie"],
+                            "product_name": entry["Produkt"],
+                            "company": entry["Firma"],
+                        }
+                    )
                     filtered.append(e)
                     continue
 
@@ -263,7 +271,7 @@ class Doc():
 
     @staticmethod
     def clean_entities(entities):
-        '''
+        """
         Clean out entities by removing
         those which are obviously
         unsuitable and reformatting
@@ -279,17 +287,16 @@ class Doc():
         ---------
             entities : list
                 Cleaned entities.
-        '''
+        """
         cleaned = []
         for e in entities:
             # Clean string of punctuation.
-            e.string = re.sub(r'[.,\/#!$%\^&\*;:{}=\-_`~()]', '', e.string)
+            e.string = re.sub(r"[.,\/#!$%\^&\*;:{}=\-_`~()]", "", e.string)
             if e.string in SW:
                 # Ignore matches to stopwords.
                 continue
 
-            elif len(str(e.match)) <= 3 \
-                and e.match.lower() != e.string.lower():
+            elif len(str(e.match)) <= 3 and e.match.lower() != e.string.lower():
                 # If string is short and not an exact
                 # match, ignore because the ngram matcher
                 # is not precise enough to catch such cases.
@@ -303,7 +310,7 @@ class Doc():
 
     @staticmethod
     def consolidate_entities(entities, text):
-        '''
+        """
         Consolidate entities which are
         'back-to-back' ie if two or more terms
         are next to eachother, assume they refer to
@@ -322,9 +329,10 @@ class Doc():
         ---------
             entities : list
                 List of consolidated entity objects.
-        '''
+        """
+
         def group_two_entities(a, b):
-            '''
+            """
             Group two entities together
             into a single entity.
 
@@ -339,16 +347,16 @@ class Doc():
             ---------
                 entity : entity
                     Consolidated entity.
-            '''
+            """
             return entity.Entity(
-                    page=a.page,
-                    location=range(a.location[0], b.location[-1]+1),
-                    string=str(a.string) + ' ' + str(b.string),
-                    match=str(a.match) + ' ' + str(b.match),
-                    idx=a.idx,
-                    score=(a.score + b.score) / 2,
-                    text=text,
-                )
+                page=a.page,
+                location=range(a.location[0], b.location[-1] + 1),
+                string=str(a.string) + " " + str(b.string),
+                match=str(a.match) + " " + str(b.match),
+                idx=a.idx,
+                score=(a.score + b.score) / 2,
+                text=text,
+            )
 
         consolidated = []
         for i, e in enumerate(entities):
@@ -358,20 +366,20 @@ class Doc():
             # ordered by their appearance in the
             # document.
             try:
-                if entities[i+1].location[0] - e.location[-1] == 1:
+                if entities[i + 1].location[0] - e.location[-1] == 1:
                     # If should be grouped with following token, just wait,
                     # ignoring this token that we don't get duplicates.
                     continue
 
-                elif e.location[0] - entities[i-1].location[-1] == 1:
+                elif e.location[0] - entities[i - 1].location[-1] == 1:
                     # On iteration corresponding to the matched token,
                     # we then consolidate the two and add this to the list.
-                    if entities[i-1].match == e.match:
+                    if entities[i - 1].match == e.match:
                         # If they are the same keyword, don't
                         # accept because it doesn't make sense.
                         continue
 
-                    consolidated.append(group_two_entities(entities[i-1], e))
+                    consolidated.append(group_two_entities(entities[i - 1], e))
                     continue
 
                 else:
@@ -385,8 +393,8 @@ class Doc():
 
         return consolidated
 
-    def filter_entities(self, entities:list):
-        '''
+    def filter_entities(self, entities: list):
+        """
         Remove entities for which the
         environment surrounding the
         identified keyword suggests that
@@ -405,7 +413,7 @@ class Doc():
         ---------
             validated : list
                 Filtered entities.
-        '''
+        """
         validated = []
         for e in entities:
             # Check if there exists a
@@ -423,7 +431,7 @@ class Doc():
                 continue
 
             # Remove the keyword from the environment.
-            environment = re.sub(r'[A-Z]', '', e.environment)
+            environment = re.sub(r"[A-Z]", "", e.environment)
             # Embed text into the ngram vector space.
             vector = self.keywords.get_vector(environment).toarray()
             # Run inference with the model.
@@ -439,12 +447,9 @@ class Doc():
 
     @staticmethod
     def get_matches(
-        text:list,
-        matcher:Callable[[str],list],
-        window:int,
-        bound:float
-    )->list:
-        '''
+        text: list, matcher: Callable[[str], list], window: int, bound: float
+    ) -> list:
+        """
         Get all matches for input text,
         returning information on the matched
         string and its location.
@@ -465,27 +470,32 @@ class Doc():
             matches : list
                 List of tuples containing
                 match information including the location.
-        '''
+        """
         matches = []
         for i, token in enumerate(tqdm(text)):
             # Get matches for current token.
             candidates = matcher(token, bound=bound)
             # Add these to the list with their locations.
-            matches.extend([(range(i, i+1), candidate) for candidate in candidates])
+            matches.extend([(range(i, i + 1), candidate) for candidate in candidates])
             # Get matches for each ngram looking back.
             for j in range(window):
-                ngram = ' '.join(text[i-(j+1):i+1])
+                ngram = " ".join(text[i - (j + 1) : i + 1])
                 # At beginning of a text strings will be empty.
                 if ngram:
                     candidates = matcher(ngram, bound=bound)
                     # Add to list with location ranges.
-                    matches.extend([(range(i-(j+1), i+1), candidate) for candidate in candidates])
+                    matches.extend(
+                        [
+                            (range(i - (j + 1), i + 1), candidate)
+                            for candidate in candidates
+                        ]
+                    )
 
         return matches
 
     @staticmethod
-    def filter_matches(matches:list)->list:
-        '''
+    def filter_matches(matches: list) -> list:
+        """
         Filter matches according to several
         heuristics which aim to overcome collisions
         by prioritizing spans with more tokens and
@@ -501,12 +511,12 @@ class Doc():
         ---------
             matches : list
                 Filtered matches.
-        '''
+        """
         # Use a mask to track the filtering.
         mask = []
         # Count attested tokens so we can immediately
         # extract those which have no collisions.
-        counter = Counter([i for span,_ in matches for i in span])
+        counter = Counter([i for span, _ in matches for i in span])
         for span, (word, score, i) in matches:
             # Immediately grab matches of single tokens with
             # no collisions.
@@ -531,4 +541,4 @@ class Doc():
                 mask.append(False)
 
         # Apply the mask.
-        return [match for match,boolean in zip(matches, mask) if boolean == True]
+        return [match for match, boolean in zip(matches, mask) if boolean == True]

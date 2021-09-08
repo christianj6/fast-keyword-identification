@@ -4,7 +4,7 @@ import re
 
 
 def ngrams(string, n=2):
-    '''
+    """
     Custom analyzer for tfidf vectorizer. Splits a
     string into all possible ngrams.
 
@@ -20,17 +20,17 @@ def ngrams(string, n=2):
     ---------
         ngrams : list[str]
             List of ngrams for the string.
-    '''
+    """
     # Clean the string.
-    string = re.sub(r'[,-/]|\sBD',r'', string)
+    string = re.sub(r"[,-/]|\sBD", r"", string)
     # Get the character ngrams.
     ngrams = zip(*[string[i:] for i in range(n)])
 
-    return [''.join(ngram) for ngram in ngrams]
+    return ["".join(ngram) for ngram in ngrams]
 
 
-class Keywords():
-    '''
+class Keywords:
+    """
     Object for storing and matching
     to a predefined keyword list.
 
@@ -49,12 +49,13 @@ class Keywords():
         match
             Match to a single
             word.
-    '''
-    def __init__(self, words:list, ids:list=None):
-        '''
+    """
+
+    def __init__(self, words: list, ids: list = None):
+        """
         Initialize ie train the keyword
         matcher.
-        '''
+        """
         # Tfidf vectorizer.
         self.vectorizer = None
         # Tfidf matrix.
@@ -70,9 +71,8 @@ class Keywords():
         # Fit object to words.
         self.fit(words)
 
-
-    def fit(self, words:list):
-        '''
+    def fit(self, words: list):
+        """
         Fit a tfidf matrix to the wordlist,
         which can then be used to match
         strings back to words from the list.
@@ -82,7 +82,7 @@ class Keywords():
             words : list
                 List of words for
                 computing the matrix.
-        '''
+        """
         # Do some mild preprocessing.
         strings = list(map(lambda x: str(x).lower(), words))
         # Create the tfidf vectorizer with
@@ -91,9 +91,8 @@ class Keywords():
         # Fit the vectorizer to the data.
         self.matrix = self.vectorizer.fit_transform(strings)
 
-
-    def get_vector(self, string:str):
-        '''
+    def get_vector(self, string: str):
+        """
         Get ngram vector representation of a
         string based on the fitted vectorizer.
 
@@ -107,7 +106,7 @@ class Keywords():
             vector : csr_matrix
                 Compressed sparse row matrix
                 representation.
-        '''
+        """
         # Cast the query string into a list because sklearn vectorizer
         # wants an array-like object.
         string = [string]
@@ -116,9 +115,8 @@ class Keywords():
 
         return vector
 
-
-    def match(self, string:str, bound:float=0.7):
-        '''
+    def match(self, string: str, bound: float = 0.7):
+        """
         Match a query string against the list
         of fitted strings via the tfidf matrix.
 
@@ -136,9 +134,10 @@ class Keywords():
             matches : list[tuple]
                 List of tuples containing the original string, the matched
                 string, and the cosine distance between their tfidf vectors.
-        '''
+        """
+
         def cossim_top(query_matrix, ntop=10, lower_bound=0):
-            '''
+            """
             Returns csr matrix with topn matches to the fitted
             matrix for for a given query matrix
 
@@ -157,7 +156,7 @@ class Keywords():
             Returns
             ---------
                 matches : csr_matrix
-            '''
+            """
             # Force the query and target into csr matrices. If they
             # are already, there is no overhead.
             A = self.matrix.tocsr()
@@ -177,5 +176,3 @@ class Keywords():
         matches = [(self.words[j], matches.data[i], j) for i, j in enumerate(match_ids)]
         # Sort it by closest match.
         return sorted(matches, key=lambda x: x[1], reverse=True)
-
-

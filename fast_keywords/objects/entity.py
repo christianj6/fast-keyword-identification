@@ -1,25 +1,24 @@
-
-
-class Entity():
-    '''
+class Entity:
+    """
     Object to store relevant
     information for a single
     identified entity that this
     can be easily extracted for
     outputs.
-    '''
+    """
+
     def __init__(
         self,
-        page:int,
-        location:'range',
-        string:str,
-        match:str,
-        idx:str,
-        score:float,
-        text:list,
-        environment:str=None,
+        page: int,
+        location: "range",
+        string: str,
+        match: str,
+        idx: str,
+        score: float,
+        text: list,
+        environment: str = None,
     ):
-        '''
+        """
         Instantiate object and parse the text
         to format the entity's environment ie
         the surrounding text.
@@ -47,7 +46,7 @@ class Entity():
             environment : str
                 Formatted string containing
                 the text around the matched entity.
-        '''
+        """
         # Assign miscellaneous attributes.
         self.page = page
         self.location = location
@@ -61,20 +60,20 @@ class Entity():
         # Empty attributes pending product information.
         self.is_product = 0
         self.product_data = {
-                        "product_id": None,
-                        "wirtschaftsbereich": None,
-                        "group": None,
-                        "family": None,
-                        "product_name": None,
-                        "company": None,
+            "product_id": None,
+            "wirtschaftsbereich": None,
+            "group": None,
+            "family": None,
+            "product_name": None,
+            "company": None,
         }
 
     @staticmethod
     def format_environment(
-            text:list,
-            location:'range',
-    )->str:
-        '''
+        text: list,
+        location: "range",
+    ) -> str:
+        """
         Formats a string representing the
         environment surrounding the token.
 
@@ -94,17 +93,17 @@ class Entity():
                 representing the entity
                 within its
                 environment.
-        '''
-        environment = ''
+        """
+        environment = ""
         # Extract only the text around the entity.
-        text = text[location[0]-10:location[-1]+11]
+        text = text[location[0] - 10 : location[-1] + 11]
         # Reset the location to this slice.
-        location = range(10, 10+len(location))
+        location = range(10, 10 + len(location))
         # Build a string by iterating through tokens.
         for i, token in enumerate(text):
             if i in location:
                 token = token.upper()
 
-            environment += token + ' '
+            environment += token + " "
 
         return environment
