@@ -3,18 +3,31 @@ Fast keyword identification with n-gram vector string matching.
 ***
 
 #### Overview
-This package a basic and generic pipeline for parsing a sequence of
-texts into documents from which are extracted desired 'entites' or
-keywords from a finite list. Entities can be associated with various
-metadata, such as sentiment and optionally, 'products,' given that the
-pipeline is currently tuned to a brand identification task.
+This package provides a generic pipeline for fuzzy-identification of keywords in large document collections. For example, if you wish to find all occurrences of the keyword "Walmart" in a large document collection, but expect some typos or variations in spelling, this module will allow you to quickly identify all matches. The matcher is based on a character n-gram vector model rather than the slower string edit distance. The module is originally intended for brand monitoring applications.
 
-#### Installation
-```$ git clone https://github.com/christianj6/fast-keyword-identification.git```
+***
 
-```$ cd fast-keyword-identification```
+### Installation
 
-```$ pip install setup.py```
+```
+pip install fast-keywords
+```
 
-#### Usage
-```$ python -m fast_keywords```
+***
+
+### CLI
+
+```
+python -m fast-keywords --help
+```
+
+***
+
+### Usage
+
+```
+python -m fast-keywords -k keywords.csv -c corpus.csv
+```
+
+***
+
