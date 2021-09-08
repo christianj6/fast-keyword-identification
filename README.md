@@ -18,7 +18,7 @@ pip install fast-keywords
 ### CLI
 
 ```
-python -m fast-keywords --help
+python -m fast_keywords --help
 ```
 
 ***
@@ -26,7 +26,7 @@ python -m fast-keywords --help
 ### Usage
 
 ```
-python -m fast-keywords -k keywords.txt -c corpus.csv -l english -b 0.75
+python -m fast_keywords -k keywords.txt -c corpus.csv -l english -b 0.75
 ```
 
 ***
@@ -42,7 +42,7 @@ While the main script will search for keywords in the provided corpus, filtering
 3. Train a new model using the ```--train``` flag, providing the modified ```output.xlsx``` file and the original keywords file, as in the command below.
 
    1. ```
-      python -m fast-keywords --train -d output.xlsx -k keywords.txt
+      python -m fast_keywords --train -d output.xlsx -k keywords.txt
       ```
 
 4. The train command will create a directory with several ```model.pb``` files which you can distribute and use for filtering. You should use the absolute path to this containing directory as the model path passed with the ```-m``` flag.
@@ -50,7 +50,7 @@ While the main script will search for keywords in the provided corpus, filtering
 5. You can use your models when predicting as in the below command. You can also pass previously-trained models using the ```-m``` flag to continue training on new data when running the train command.
 
 ```
-python -m fast-keywords -k keywords.txt -c corpus.csv -l english -b 0.75 -m model.pb
+python -m fast_keywords -k keywords.txt -c corpus.csv -l english -b 0.75 -m model.pb
 ```
 
 ***
