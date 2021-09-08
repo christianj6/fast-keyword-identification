@@ -22,6 +22,18 @@ class ManagementUtility:
             type=str,
             help="Absolute path to .csv file containing corpus of documents to search.",
         )
+        parser.add_argument(
+            "-l",
+            "--language",
+            type=str,
+            help="Full lowercase name of the text language. Used for removing stopwords.",
+        )
+        parser.add_argument(
+            "-b",
+            "--bound",
+            type=float,
+            help="Lower bound for matching cutoff. A float value between 0.0 and 1.0.",
+        )
 
         return parser
 

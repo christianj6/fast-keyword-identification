@@ -8,9 +8,6 @@ import dill
 import re
 
 
-SW = stopwords.words("english") + stopwords.words("german")
-
-
 class Doc:
     """
     Object for storing attributes of a single
@@ -78,6 +75,7 @@ class Doc:
         # Sentiment model.
         self.sentiment_model = sentiment_model
         # Extract entities from text.
+        self.stopwords = stopwords.words(language)
         self.entities = self.get_entities()
 
     @staticmethod
@@ -107,7 +105,9 @@ class Doc:
             # by line breaks.
             page = page.replace("- ", "")
             # Basic preprocessing to separate punctuations.
-            for token in page.lower().replace(".", " . ").replace(",", " , ").split():
+            for token in (
+                page.lower().replace(".", " . ").replace(",", " , ").split()
+            ):
                 txt.append(token)
                 mask.append(i)
 
@@ -131,7 +131,7 @@ class Doc:
             self.text, self.keywords.match, self.window, self.bound
         )
         # Filter the matches by several heuristics.
-        matches = self.filter_matches(matches)
+        # matches = self.filter_matches(matches)
         # Cast filtered matches to entities.
         entities = []
         for span, (word, score, i) in matches:
@@ -161,7 +161,7 @@ class Doc:
 
         # Cast all entities to df.
         df = []
-        for e in tqdm(entities):
+        for e in entities:
             # Get sentiment if there is a model.
             if self.sentiment_model:
                 e.sentiment = self.sentiment_model.predict_sentiment(
@@ -184,7 +184,9 @@ class Doc:
                     "Product": e.is_product,
                     # Product data
                     "Product ID": e.product_data["product_id"],
-                    "Product Wirtschaftsbereich": e.product_data["wirtschaftsbereich"],
+                    "Product Wirtschaftsbereich": e.product_data[
+                        "wirtschaftsbereich"
+                    ],
                     "Product Group": e.product_data["group"],
                     "Product Family": e.product_data["family"],
                     "Product Name": e.product_data["product_name"],
@@ -222,11 +224,13 @@ class Doc:
         for e in entities:
             if e.idx in self.keyword_to_product:
                 # Use array mask to impose filter.
-                product_marker_words = list(self.keyword_to_product[e.idx].keys())
+                product_marker_words = list(
+                    self.keyword_to_product[e.idx].keys()
+                )
                 mask = [
                     word in e.environment.split()
                     and not word == e.match.lower()
-                    and not word in SW
+                    and not word in self.stopwords
                     for word in product_marker_words
                 ]
                 if any(mask):
@@ -269,8 +273,7 @@ class Doc:
 
         return filtered
 
-    @staticmethod
-    def clean_entities(entities):
+    def clean_entities(self, entities):
         """
         Clean out entities by removing
         those which are obviously
@@ -292,11 +295,13 @@ class Doc:
         for e in entities:
             # Clean string of punctuation.
             e.string = re.sub(r"[.,\/#!$%\^&\*;:{}=\-_`~()]", "", e.string)
-            if e.string in SW:
+            if e.string in self.stopwords:
                 # Ignore matches to stopwords.
                 continue
 
-            elif len(str(e.match)) <= 3 and e.match.lower() != e.string.lower():
+            elif (
+                len(str(e.match)) <= 3 and e.match.lower() != e.string.lower()
+            ):
                 # If string is short and not an exact
                 # match, ignore because the ngram matcher
                 # is not precise enough to catch such cases.
@@ -422,7 +427,9 @@ class Doc:
             # to run a prediction for this model
             # against the entity's environment.
             try:
-                with open(f"fast_keywords/models/{self.language}/{e.match}", "rb") as f:
+                with open(
+                    f"fast_keywords/models/{self.language}/{e.match}", "rb"
+                ) as f:
                     model = dill.load(f)
 
             except FileNotFoundError:
@@ -472,11 +479,13 @@ class Doc:
                 match information including the location.
         """
         matches = []
-        for i, token in enumerate(tqdm(text)):
+        for i, token in enumerate(text):
             # Get matches for current token.
             candidates = matcher(token, bound=bound)
             # Add these to the list with their locations.
-            matches.extend([(range(i, i + 1), candidate) for candidate in candidates])
+            matches.extend(
+                [(range(i, i + 1), candidate) for candidate in candidates]
+            )
             # Get matches for each ngram looking back.
             for j in range(window):
                 ngram = " ".join(text[i - (j + 1) : i + 1])
@@ -541,4 +550,6 @@ class Doc:
                 mask.append(False)
 
         # Apply the mask.
-        return [match for match, boolean in zip(matches, mask) if boolean == True]
+        return [
+            match for match, boolean in zip(matches, mask) if boolean == True
+        ]

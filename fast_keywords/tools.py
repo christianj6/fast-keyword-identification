@@ -5,10 +5,6 @@ import dill
 import re
 
 
-WORDLIST = "Suchworte.xlsx"
-PREFIX = "fast_keywords/res/nielsen/"
-
-
 def json_to_str(json: dict, ret: str, txt: str) -> str:
     """
     Concatenates text attributes from
