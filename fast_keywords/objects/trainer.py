@@ -11,7 +11,6 @@ class Trainer:
 
     def __init__(
         self,
-        language: str,
         keyword: str,
         data: list,
         labels: list,
@@ -35,8 +34,6 @@ class Trainer:
                 List of same size as the data
                 containing training labels.
         """
-        # Assign misc attributes.
-        self.language = language
         self.keyword = keyword
         self.data = data
         self.labels = labels

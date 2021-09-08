@@ -34,6 +34,27 @@ class ManagementUtility:
             type=float,
             help="Lower bound for matching cutoff. A float value between 0.0 and 1.0.",
         )
+        parser.add_argument(
+            "-t",
+            "--train",
+            action="store_true",
+            help="Switch for running training task.",
+        )
+        parser.add_argument(
+            "-m",
+            "--model",
+            type=str,
+            help="Absolute path to model binary file.",
+        )
+        parser.add_argument(
+            "-d", "--data", type=str, help="Data to use for training."
+        )
+        parser.add_argument(
+            "-e",
+            "--evaluate",
+            action="store_true",
+            help="Run evaluation task against provided model.",
+        )
 
         return parser
 

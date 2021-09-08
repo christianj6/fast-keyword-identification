@@ -25,8 +25,6 @@ class Doc:
         window: int = 2,
         bound: float = 0.95,
         trained_filter: bool = False,
-        keyword_to_product: dict = None,
-        products: dict = None,
         sentiment_model=None,
     ):
         """
@@ -69,9 +67,6 @@ class Doc:
         self.trained_filter = trained_filter
         # Lowercase and split the text.
         self.text, self.page_mask = self.preprocess_text(text)
-        # Additional dicts for filtering.
-        self.keyword_to_product = keyword_to_product
-        self.products = products
         # Sentiment model.
         self.sentiment_model = sentiment_model
         # Extract entities from text.
@@ -155,10 +150,6 @@ class Doc:
         # Consolidate entities by position.
         entities = self.consolidate_entities(entities, self.text)
 
-        # Filter products for brand mentions.
-        if self.keyword_to_product and self.products:
-            entities = self.filter_products(entities)
-
         # Cast all entities to df.
         df = []
         for e in entities:
@@ -181,16 +172,6 @@ class Doc:
                     "Match Confidence": e.score,
                     "Surrounding Text": e.environment,
                     "Match is Invalid": e.is_invalid,
-                    "Product": e.is_product,
-                    # Product data
-                    "Product ID": e.product_data["product_id"],
-                    "Product Wirtschaftsbereich": e.product_data[
-                        "wirtschaftsbereich"
-                    ],
-                    "Product Group": e.product_data["group"],
-                    "Product Family": e.product_data["family"],
-                    "Product Name": e.product_data["product_name"],
-                    "Product Company": e.product_data["company"],
                     "Sentiment": e.sentiment,
                 }
             )
@@ -427,9 +408,7 @@ class Doc:
             # to run a prediction for this model
             # against the entity's environment.
             try:
-                with open(
-                    f"fast_keywords/models/{self.language}/{e.match}", "rb"
-                ) as f:
+                with open(f"{self.trained_filter}/{e.match}.pb", "rb") as f:
                     model = dill.load(f)
 
             except FileNotFoundError:
@@ -438,7 +417,7 @@ class Doc:
                 continue
 
             # Remove the keyword from the environment.
-            environment = re.sub(r"[A-Z]", "", e.environment)
+            environment = re.sub(r"[A-Z]", "", str(e.environment))
             # Embed text into the ngram vector space.
             vector = self.keywords.get_vector(environment).toarray()
             # Run inference with the model.

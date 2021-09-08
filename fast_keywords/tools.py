@@ -1,5 +1,5 @@
 import pandas as pd
-from fast_keywords.objects import keywords
+from .objects import keywords
 import os
 import dill
 import re
@@ -63,7 +63,7 @@ def get_distribution(output: "pd.DataFrame"):
     return pd.DataFrame(distribution)
 
 
-def evaluate_classifiers(filename):
+def evaluate_classifiers(model_path, keywords_file, data_path):
     """
     Evaluate classification
     accuracy in a messy fashion,
@@ -71,86 +71,28 @@ def evaluate_classifiers(filename):
     to see how the classifers
     are collectively performing.
 
-    Parameters
-    ---------
-        file : str
-            File for eval.
-
     Returns
     ---------
         score : float
             Classification accuracy.
     """
-    words = pd.read_excel(f"{PREFIX}{WORDLIST}")
-    kw = keywords.Keywords(words.searchtext.tolist(), ids=words.id.tolist())
+    with open(keywords_file, "r") as f:
+        words = f.read().splitlines()
+
+    kw = keywords.Keywords(words=words, ids=list(range(len(words))))
+
     scores = []
-    output = pd.read_excel(filename).infer_objects()
-    for file in os.listdir("fast_keywords/models/german"):
-        with open(f"fast_keywords/models/german/{file}", "rb") as f:
+    output = pd.read_excel(data_path).infer_objects()
+
+    for file in os.listdir(model_path):
+        with open(f"{model_path}/{file}", "rb") as f:
             model = dill.load(f)
 
-        rows = output[output["Keyword"] == file]
+        rows = output[output["Keyword"] == file.strip(".pb")]
         X = rows["Surrounding Text"].tolist()
-        X = [re.sub(r"[A-Z]", "", x) for x in X]
+        X = [re.sub(r"[A-Z]", "", str(x)) for x in X]
         X = [kw.get_vector(x).toarray()[0] for x in X]
         y = rows["Match is Invalid"].tolist()
         scores.append((file, model.model.score(X, y)))
 
     return scores
-
-
-def load_keyword_product_dict(keyword_to_product: str) -> dict:
-    """
-    Load a mapping from keyword id to possible product ids,
-    that these can then be used for an additional
-    filtering step during entity extraction.
-
-    Parameters
-    ---------
-        keyword_to_product : str
-            Filepath.
-
-    Returns
-    ---------
-        output : dict
-            Mapping.
-    """
-    # Noise
-    noise = [".", ",", "image"]
-    output = {}
-    df = pd.read_csv(keyword_to_product)
-    for idx, group in df.groupby(by=["Keyword ID"]):
-        id_to_word = {}
-        for _, row in group.iterrows():
-            for word in row["Surrounding Text"].split():
-                if (
-                    not word.lower() == row["Keyword"].lower()
-                    and not word.lower() in noise
-                ):
-                    id_to_word[word.lower()] = row["File"]
-
-        output[idx] = id_to_word
-
-    return output
-
-
-def load_product_data_dict(products: str) -> dict:
-    """
-    Load product metadata keyed to product ids that
-    these data can then be associated with
-    identified entities.
-
-    Parameters
-    ---------
-        products : str
-            Filepath.
-
-    Returns
-    ---------
-        output : dict
-            Mapping.
-    """
-    df = pd.read_csv(products)
-    df = df.set_index("Unnamed: 0")
-
-    return df.to_dict(orient="index")
